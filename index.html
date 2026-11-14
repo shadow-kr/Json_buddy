@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Json Buddy</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23FFB8D6'/%3E%3Ccircle cx='22' cy='28' r='4' fill='%23402040'/%3E%3Ccircle cx='42' cy='28' r='4' fill='%23402040'/%3E%3Cpath d='M22 40q10 10 20 0' stroke='%23402040' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='15' cy='38' r='4' fill='%2381EAC9'/%3E%3Ccircle cx='49' cy='38' r='4' fill='%2381EAC9'/%3E%3Ctext x='32' y='18' font-size='14' text-anchor='middle' font-family='monospace' font-weight='bold' fill='%23402040'%3E%7B %7D%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme:dark;--bg:#121812;--panel:#1a221a;--soft:#243024;--line:#35473a;--text:#E8F1D4;--dim:#8a9c84;--ink:#2a1a24;
+  --pink:#FFB8D6;--yellow:#F1FE98;--mint:#81EAC9;--accent:#FFB8D6;
+  --c0:#ff7aa8;--c1:#ffa95c;--c2:#5fd698;--c3:#62b8ff;--c4:#b999ff;--c5:#f0cf5a;--c6:#4fd8d8;--c7:#ff8a84;
+  --mono:"JetBrains Mono","Fira Code",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.5 "Nunito","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column}
+.mono,#hl,#inp,#ln{font-family:var(--mono);font-size:12.5px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 12px;transition:.15s}
+button:hover{background:var(--soft);border-color:var(--mint)}
+button:focus-visible,#inp:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+header{display:flex;align-items:center;gap:8px;padding:10px 14px 0;overflow-x:auto}
+.logo{font-weight:800;font-size:16px;margin-right:6px;white-space:nowrap}
+.tab{display:flex;align-items:center;gap:6px;padding:6px 10px 6px 14px;border-radius:12px 12px 0 0;background:var(--soft);border:1px solid var(--line);border-bottom:0;cursor:grab;white-space:nowrap;user-select:none}
+.tab.active{background:var(--panel);font-weight:700;box-shadow:0 3px 0 var(--pink) inset}
+.tab.over{outline:2px dashed var(--accent)}
+.tab .x{border:0;background:none;padding:0 4px;border-radius:50%;color:var(--dim)}
+.tab .x:hover{color:var(--c7);background:none}
+#add{border-radius:50%;width:30px;height:30px;padding:0;background:var(--mint);color:var(--ink);border-color:var(--mint)}
+#add:hover{background:var(--yellow)}
+main{flex:1;min-height:0;display:flex;margin:0 14px 14px;background:var(--panel);border:1px solid var(--line);border-radius:0 14px 14px 14px;overflow:hidden}
+#left{width:42%;min-width:120px;display:flex;flex-direction:column;padding:12px}
+#split{width:12px;cursor:col-resize;background:var(--soft) radial-gradient(circle,var(--dim) 1.2px,transparent 1.6px) center/6px 10px repeat-y;flex:none;border-left:1px solid var(--line);border-right:1px solid var(--line);touch-action:none}
+#split:hover,#split.drag{background-color:var(--pink)}
+#right{flex:1;min-width:0;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+.bar{display:flex;justify-content:flex-end}
+#hideAll{background:var(--pink);color:var(--ink);border-color:var(--pink);font-weight:700}
+#hideAll:hover,.primary:hover{background:var(--yellow);color:var(--ink)}
+.inrow{flex:1;display:flex;gap:8px;min-height:0}
+.ed{flex:1;display:flex;min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+#ln{width:46px;margin:0;padding:10px 8px 10px 0;text-align:right;color:var(--dim);overflow:hidden;background:var(--soft);user-select:none;white-space:pre;flex:none}
+.cw{position:relative;flex:1;min-width:0}
+#hl,#inp{position:absolute;inset:0;margin:0;padding:10px;border:0;white-space:pre;tab-size:2}
+#hl{pointer-events:none;overflow:hidden;color:var(--text)}
+#inp{background:transparent;color:transparent;caret-color:var(--text);resize:none;overflow:auto;outline:none}
+#inp::selection{background:#81EAC966;color:transparent}
+.hk{color:#ff9ec4}.hs{color:#8be3a8}.hn{color:#ffb26b}.hb{color:#b999ff;font-weight:700}.hz{color:#8a9c84;font-style:italic}.hp{color:#8a9c84}
+.btns{display:flex;flex-direction:column;gap:8px}
+.primary{background:var(--pink);color:var(--ink);border-color:var(--pink);font-weight:700}
+#msg{min-height:20px;margin-top:6px;font-size:12px;color:var(--dim)}
+#msg.err{color:var(--c7)}
+.sec{border:1px solid var(--line);border-radius:12px;background:var(--bg);flex:none}
+#inSec{flex:1;display:flex;flex-direction:column;min-height:0}
+.sec>h3{margin:0;display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;cursor:pointer;user-select:none;background:color-mix(in srgb,var(--yellow) 13%,var(--panel));border-radius:11px 11px 0 0}
+.sec.closed>h3{border-radius:11px}
+.sec>h3 .tg{width:18px;text-align:center;transition:transform .15s;color:var(--text)}
+.sec.closed>h3 .tg{transform:rotate(-90deg)}
+.sec.closed .body{display:none}
+.sec h3 .sp{flex:1}
+.sec h3 button{padding:2px 8px;font-size:12px}
+.body{height:240px;min-height:60px;min-width:180px;max-width:none;overflow:auto;resize:both;padding:8px 12px;border-top:1px solid var(--line)}
+.cn{counter-reset:ln;padding-left:50px}
+.gut{position:absolute;left:calc(var(--d,0)*var(--st,0px)*-1 - 46px);width:34px;text-align:right;color:var(--dim);user-select:none;font-size:11px}
+.gut::before{counter-increment:ln;content:counter(ln)}
+#view{--st:21px}#tree{--st:20px}
+.n>.kids{margin-left:7px;padding-left:12px;border-left:2px solid var(--c)}
+.n.closed>.kids{display:none}
+.n.closed>.hd .tgl{transform:rotate(-90deg)}
+.hd{position:relative;display:flex;gap:4px;align-items:baseline;white-space:nowrap}
+.tgl{border:0;background:none;padding:0 3px;color:var(--c);font-size:11px;transition:transform .15s}
+.tgl:hover{background:none}
+.k{color:var(--c);font-weight:700}
+.br{color:var(--c)}
+.cnt{color:var(--dim);font-size:11px}
+.l{white-space:pre-wrap;word-break:break-word}
+.s{color:#8be3a8}.nu{color:#ffb26b}.b{color:#b999ff}.z{color:#8a9c84;font-style:italic}
+.pl{position:relative;display:flex;gap:10px;padding:0;white-space:nowrap}
+.pl .i{color:var(--dim);min-width:34px;text-align:right}
+.pl .val{color:var(--dim);overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.pl b{font-weight:700}.pl .dot{color:var(--dim)}
+.tr ul{list-style:none;margin:0;padding-left:20px}
+.tr>ul{padding-left:0}
+.tr li{position:relative;padding:1px 0}
+.tr ul ul>li::before{content:"";position:absolute;left:-12px;top:0;bottom:0;border-left:2px solid var(--c)}
+.tr ul ul>li:last-child::before{bottom:auto;height:13px}
+.tr ul ul>li::after{content:"";position:absolute;left:-12px;top:12px;width:10px;border-top:2px solid var(--c)}
+.tr .lb{display:inline-flex;gap:6px;align-items:baseline;padding:0 8px;border-radius:999px;background:color-mix(in srgb,var(--c) 20%,var(--panel));border:1px solid var(--c);cursor:pointer;margin-left:2px}
+.tr .lb b{color:var(--c)}
+.tr li.closed>ul{display:none}
+.empty{color:var(--dim);padding:6px 0}
+@media (max-width:720px){main{flex-direction:column}#left{width:100%!important;height:45%}#split{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">Json Buddy</span>
+  <div id="tabs" style="display:flex;gap:4px;align-items:flex-end"></div>
+  <button id="add" title="New tab">+</button>
+</header>
+<main>
+  <section id="left">
+    <div class="sec" id="inSec">
+      <h3><span class="tg">▾</span>JSON input</h3>
+      <div class="body" style="flex:1;resize:none;display:flex;flex-direction:column;height:auto;padding:8px">
+        <div class="inrow">
+          <div class="ed">
+            <pre id="ln">1</pre>
+            <div class="cw"><pre id="hl"></pre><textarea id="inp" spellcheck="false" wrap="off" placeholder='Paste your JSON here, e.g. {"header":{"event":"hello"}}'></textarea></div>
+          </div>
+          <div class="btns">
+            <button class="primary" id="fmt" title="Pretty-print the JSON">Format</button>
+            <button id="min" title="Compact the JSON">Minify</button>
+            <button id="clr" title="Empty the field">Empty</button>
+          </div>
+        </div>
+        <div id="msg"></div>
+      </div>
+    </div>
+  </section>
+  <div id="split" title="Drag to resize"></div>
+  <section id="right">
+    <div class="bar"><button id="hideAll">Hide all menus</button></div>
+    <div class="sec" data-k="view"><h3><span class="tg">▾</span>Tree<span class="sp"></span><button id="exp">Expand all</button><button id="col">Collapse all</button></h3><div class="body mono cn" id="view" style="height:320px"></div></div>
+    <div class="sec" data-k="slash"><h3><span class="tg">▾</span>Slash paths</h3><div class="body mono cn" id="slash"></div></div>
+    <div class="sec" data-k="num"><h3><span class="tg">▾</span>BDD paths</h3><div class="body mono cn" id="num"></div></div>
+    <div class="sec" data-k="tree"><h3><span class="tg">▾</span>Branch</h3><div class="body mono cn tr" id="tree"></div></div>
+  </section>
+</main>
+<script>
+const $=s=>document.querySelector(s), C=i=>`var(--c${i%8})`;
+let S={tabs:[],active:null,closed:{},left:42,heights:{}};
+const KEY="jsonbuddy.v1";
+function load(){try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const uid=()=>Math.random().toString(36).slice(2,9);
+function newTab(name){const t={id:uid(),name:name||"Tab "+(S.tabs.length+1),text:""};S.tabs.push(t);S.active=t.id;return t}
+const cur=()=>S.tabs.find(t=>t.id===S.active)||S.tabs[0];
+const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
+const gut=()=>el("span","gut");
+
+/* ---------- editor with syntax colors ---------- */
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const RE=/("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+\.?\d*(?:[eE][+-]?\d+)?)|([{}\[\],:])/g;
+function colorize(t){
+  return esc(t).replace(RE,(m,str,col,kw,num,pun)=>{
+    if(str)return col?`<span class="hk">${str}</span><span class="hp">${col}</span>`:`<span class="hs">${str}</span>`;
+    if(kw)return `<span class="${kw==="null"?"hz":"hb"}">${m}</span>`;
+    if(num)return `<span class="hn">${m}</span>`;
+    return `<span class="hp">${m}</span>`;
+  });
+}
+function syncEd(){
+  const t=$("#inp").value;
+  $("#hl").innerHTML=colorize(t)+"\n ";
+  $("#ln").textContent=Array.from({length:t.split("\n").length},(_,i)=>i+1).join("\n");
+  syncScroll();
+}
+function syncScroll(){const i=$("#inp");$("#hl").scrollTop=i.scrollTop;$("#hl").scrollLeft=i.scrollLeft;$("#ln").scrollTop=i.scrollTop}
+$("#inp").addEventListener("scroll",syncScroll);
+
+/* ---------- tabs ---------- */
+let dragId=null;
+function renderTabs(){
+  const box=$("#tabs");box.innerHTML="";
+  S.tabs.forEach(t=>{
+    const d=el("div","tab"+(t.id===S.active?" active":""));d.draggable=true;
+    d.append(el("span","",t.name));
+    const x=el("button","x","✕");x.title="Delete tab";
+    x.onclick=e=>{e.stopPropagation();delTab(t.id)};d.append(x);
+    d.onclick=()=>{S.active=t.id;save();renderAll()};
+    d.ondblclick=()=>{const n=prompt("Rename tab",t.name);if(n){t.name=n;save();renderTabs()}};
+    d.ondragstart=e=>{dragId=t.id;e.dataTransfer.effectAllowed="move"};
+    d.ondragover=e=>{e.preventDefault();d.classList.add("over")};
+    d.ondragleave=()=>d.classList.remove("over");
+    d.ondrop=e=>{e.preventDefault();d.classList.remove("over");
+      const a=S.tabs.findIndex(x=>x.id===dragId),b=S.tabs.findIndex(x=>x.id===t.id);
+      if(a<0||a===b)return;S.tabs.splice(b,0,S.tabs.splice(a,1)[0]);save();renderTabs()};
+    box.append(d);
+  });
+}
+function delTab(id){
+  if(S.tabs.length===1){S.tabs[0].text="";S.tabs[0].name="Tab 1"}
+  else{const i=S.tabs.findIndex(t=>t.id===id);S.tabs.splice(i,1);if(S.active===id)S.active=S.tabs[Math.max(0,i-1)].id}
+  save();renderAll();
+}
+
+/* ---------- views ---------- */
+const type=v=>v===null?"null":Array.isArray(v)?"array":typeof v;
+const isC=v=>v&&typeof v==="object";
+const kids=v=>Array.isArray(v)?v.map((x,i)=>[i,x]):Object.entries(v);
+function leaf(v){
+  const t=type(v);
+  return el("span","l "+({string:"s",number:"nu",boolean:"b",null:"z"}[t]||""),t==="string"?JSON.stringify(v):String(v));
+}
+function line(){const h=el("div","hd mono");h.append(gut());return h}
+function node(v,key,depth,last){
+  const wrap=el("div","n");wrap.style.setProperty("--c",C(depth));wrap.style.setProperty("--d",depth);
+  const hd=line(),arr=Array.isArray(v);
+  const keyEl=()=>{if(key!==null){hd.append(el("span","k",JSON.stringify(String(key))),el("span","",":\u00a0"))}};
+  if(!isC(v)||!kids(v).length){
+    hd.append(el("span","tgl","\u00a0"));keyEl();
+    hd.append(isC(v)?el("span","br",arr?"[]":"{}"):leaf(v));
+    if(!last)hd.append(el("span","",","));
+    wrap.append(hd);return wrap;
+  }
+  const tg=el("button","tgl","▼");tg.onclick=()=>wrap.classList.toggle("closed");hd.append(tg);
+  keyEl();
+  hd.append(el("span","br",arr?"[":"{"));
+  const ks=kids(v);
+  hd.append(el("span","cnt","\u00a0"+ks.length+(arr?" items":" keys")));
+  wrap.append(hd);
+  const kd=el("div","kids");
+  ks.forEach(([k,x],i)=>kd.append(node(x,arr?null:k,depth+1,i===ks.length-1)));
+  wrap.append(kd);
+  const end=line();end.append(el("span","tgl","\u00a0"),el("span","br",arr?"]":"}"));
+  if(!last)end.append(el("span","",","));
+  wrap.append(end);
+  return wrap;
+}
+function leaves(v,path,out){
+  if(isC(v)&&kids(v).length){kids(v).forEach(([k,x])=>leaves(x,path.concat(Array.isArray(v)?"["+k+"]":k),out))}
+  else out.push([path,v]);
+  return out;
+}
+function pathEl(path,v,num,sep){
+  const r=el("div","pl");r.append(gut());
+  if(num!=null)r.append(el("span","i",num));
+  const p=el("span");
+  path.forEach((s,i)=>{
+    const slash=sep==="/";
+    if(i&&(slash||!s.startsWith("[")))p.append(el("span","dot",sep));
+    const b=el("b","",slash?s.replace(/^\[(\d+)\]$/,"$1"):s);b.style.color=C(i);p.append(b);
+  });
+  r.append(p);
+  const t=isC(v)?(Array.isArray(v)?"[]":"{}"):type(v)==="string"?JSON.stringify(v):String(v);
+  r.append(el("span","val","= "+t));
+  return r;
+}
+function treeNode(v,key,depth){
+  const li=el("li");li.style.setProperty("--c",C(depth));li.style.setProperty("--d",depth);
+  li.append(gut());
+  const ks=kids(v).filter(([k,x])=>isC(x));
+  const lb=el("span","lb");
+  lb.append(el("b","",key),el("span","cnt",(Array.isArray(v)?"array ":"object ")+kids(v).length));
+  li.append(lb);
+  if(ks.length){
+    lb.onclick=()=>li.classList.toggle("closed");
+    const ul=el("ul");
+    ks.forEach(([k,x])=>ul.append(treeNode(x,Array.isArray(v)?"["+k+"]":k,depth+1)));
+    li.append(ul);
+  }
+  return li;
+}
+function setMsg(t,err){const m=$("#msg");m.textContent=t;m.className=err?"err":""}
+const IDS=["#view","#slash","#num","#tree"];
+function renderViews(){
+  const txt=cur().text.trim();
+  IDS.forEach(s=>$(s).innerHTML="");
+  const fill=m=>IDS.forEach(s=>$(s).append(el("div","empty",m)));
+  if(!txt){setMsg("");return fill("Paste some JSON on the left to see it here.")}
+  let data;
+  try{data=JSON.parse(txt);setMsg("Valid JSON ✓")}
+  catch(e){setMsg("Can’t parse: "+e.message,true);return fill("Fix the JSON error to see this view.")}
+  $("#view").append(node(data,null,0,true));
+  if(!isC(data)){$("#slash").append(el("div","empty","Root is a single value."));$("#num").append(el("div","empty","Root is a single value."));$("#tree").append(el("div","empty","No branches."));return}
+  const all=leaves(data,[],[]),cap=all.slice(0,3000);
+  let prev=null;
+  cap.forEach(([p,v],i)=>{
+    $("#slash").append(pathEl(p,v,null,"/"));
+    const par=p.slice(0,-1).join("\u0000");
+    if(prev!==null&&par!==prev){const g=el("div","pl");g.append(gut(),el("span","","\u00a0"));$("#num").append(g)}
+    prev=par;
+    $("#num").append(pathEl(p,v,i+1,"."));
+  });
+  if(all.length>cap.length)$("#slash").append(el("div","empty","…showing first 3000 of "+all.length));
+  const ul=el("ul");ul.append(treeNode(data,"root",0));$("#tree").append(ul);
+}
+function renderAll(){renderTabs();$("#inp").value=cur().text;syncEd();renderViews();applyLayout()}
+function applyLayout(){
+  $("#left").style.width=S.left+"%";
+  document.querySelectorAll("#right .sec").forEach(s=>{
+    s.classList.toggle("closed",!!S.closed[s.dataset.k]);
+    const h=S.heights[s.dataset.k];if(h)s.querySelector(".body").style.height=h+"px";
+  });
+  $("#inSec").classList.toggle("closed",!!S.closed.input);
+  const all=[...document.querySelectorAll("#right .sec")].every(s=>s.classList.contains("closed"));
+  $("#hideAll").textContent=all?"Show all menus":"Hide all menus";
+}
+
+/* ---------- events ---------- */
+let tm;
+$("#inp").addEventListener("input",e=>{cur().text=e.target.value;syncEd();clearTimeout(tm);tm=setTimeout(()=>{save();renderViews()},250)});
+const apply=t=>{cur().text=t;$("#inp").value=t;syncEd();save();renderViews()};
+$("#fmt").onclick=()=>{try{apply(JSON.stringify(JSON.parse(cur().text),null,2))}catch(e){setMsg("Can’t format: "+e.message,true)}};
+$("#min").onclick=()=>{try{apply(JSON.stringify(JSON.parse(cur().text)))}catch(e){setMsg("Can’t minify: "+e.message,true)}};
+$("#clr").onclick=()=>{apply("");$("#inp").focus()};
+$("#add").onclick=()=>{newTab();save();renderAll();$("#inp").focus()};
+$("#exp").onclick=e=>{e.stopPropagation();document.querySelectorAll("#view .n").forEach(n=>n.classList.remove("closed"))};
+$("#col").onclick=e=>{e.stopPropagation();document.querySelectorAll("#view .n").forEach(n=>n.classList.add("closed"));const r=$("#view>.n");if(r)r.classList.remove("closed")};
+$("#hideAll").onclick=()=>{
+  const secs=[...document.querySelectorAll("#right .sec")],allClosed=secs.every(s=>s.classList.contains("closed"));
+  secs.forEach(s=>S.closed[s.dataset.k]=!allClosed);save();applyLayout();
+};
+document.querySelectorAll(".sec>h3").forEach(h=>h.addEventListener("click",e=>{
+  if(e.target.closest("button"))return;
+  const s=h.parentElement,k=s.dataset.k||"input";
+  S.closed[k]=!s.classList.contains("closed");save();applyLayout();
+}));
+/* remember section heights after manual drag-resize */
+const ro=new ResizeObserver(es=>es.forEach(r=>{const s=r.target.closest(".sec");if(!s||s.classList.contains("closed"))return;
+  const h=Math.round(r.target.getBoundingClientRect().height);if(h>60&&S.heights[s.dataset.k]!==h){S.heights[s.dataset.k]=h;clearTimeout(window._rt);window._rt=setTimeout(save,400)}}));
+document.querySelectorAll("#right .body").forEach(b=>ro.observe(b));
+/* splitter: drag to give the right side more (or less) room */
+$("#split").addEventListener("pointerdown",e=>{
+  const sp=$("#split");sp.setPointerCapture(e.pointerId);sp.classList.add("drag");const W=$("main").getBoundingClientRect();
+  const mv=ev=>{S.left=Math.min(88,Math.max(4,(ev.clientX-W.left)/W.width*100));$("#left").style.width=S.left+"%"};
+  const up=()=>{sp.classList.remove("drag");sp.removeEventListener("pointermove",mv);sp.removeEventListener("pointerup",up);save()};
+  sp.addEventListener("pointermove",mv);sp.addEventListener("pointerup",up);
+});
+
+load();
+if(!S.tabs.length){const t=newTab("Sample");t.text=JSON.stringify({header:{event:"order.created",meta:{source:"web",tags:["new","vip"]}},order:{id:1042,customer:{name:"Mina",address:{city:"Fes",geo:{lat:34.03,lng:-5}}},items:[{sku:"A1",qty:2},{sku:"B7",qty:1}]},ok:true,note:null},null,2)}
+if(!S.active||!S.tabs.some(t=>t.id===S.active))S.active=S.tabs[0].id;
+renderAll();
+</script>
+</body>
+</html>
